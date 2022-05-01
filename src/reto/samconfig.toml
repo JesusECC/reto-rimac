@@ -1,0 +1,19 @@
+version = 0.1
+[dev]
+[dev.deploy]
+[dev.deploy.parameters]
+stack_name = "formula-app-compras"
+s3_bucket = "formula-sam-backend-dev"
+s3_prefix = "formula-app-compras"
+region = "us-east-1"
+profile = "formula-dev"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = [
+    "EnviromentRol=arn:aws:iam::909231289503:role/serverless_framework",
+    "stage=dev",
+    "domain=mantisdev.xyz",
+    "HostedZoneId=Z02197422SJU3KBJW4QIW",
+    "CertificateArn=arn:aws:acm:us-east-1:909231289503:certificate/e7a9b9f8-f3aa-4f19-9757-b2fe07346a85"
+]
+image_repositories = []

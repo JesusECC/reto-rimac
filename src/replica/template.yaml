@@ -1,0 +1,156 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  formula-pw-back
+  Sample SAM Template for formula-pw-back coniguracion
+Globals:
+  Function:
+    Timeout: 300
+    Layers:
+      - !Ref ProductCoreLayer
+    Environment:
+      Variables:
+        ENVIRONMENT: "prd"
+        USER_POLL_ID: 'us-east-1_GIOuPJSzx'
+        CLIEND_ID: '3u1558r2f4toqgm4h5at7pbgfv'
+        REGION_NAME: 'us-east-1'
+        DOMAIN: 'mantisdev.xyz'
+        SUBDOMAIN: 'dev'
+        DB: 'formula_ac_ultimate'
+        USER: 'admin'
+        PASSWORD: 'RNH7uRvBuTodj^7**'
+        READER: 'formula-ac.chfcjyb9o5c3.us-east-1.rds.amazonaws.com'
+        WRITER: 'formula-ac.chfcjyb9o5c3.us-east-1.rds.amazonaws.com'
+
+Resources:
+  # ApiGatewayDomainName:
+  #   Type: AWS::ApiGateway::DomainName
+  #   Properties:
+  #     CertificateArn: arn:aws:acm:us-east-1:909231289503:certificate/e7a9b9f8-f3aa-4f19-9757-b2fe07346a85
+  #     DomainName: apis.mantisdev.xyz
+  #     EndpointConfiguration:
+  #       Types:
+  #         - EDGE
+
+  # RecordSet:
+  #   Type: AWS::Route53::RecordSet
+  #   Properties:
+  #     HostedZoneId: Z02197422SJU3KBJW4QIW
+  #     Name: apis.mantisdev.xyz
+  #     Type: A
+  #     AliasTarget:
+  #       HostedZoneId: !GetAtt ApiGatewayDomainName.DistributionHostedZoneId
+  #       DNSName: !GetAtt ApiGatewayDomainName.DistributionDomainName
+
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+      Name: api-config
+      # Domain:
+      #   CertificateArn: arn:aws:acm:us-east-1:909231289503:certificate/e7a9b9f8-f3aa-4f19-9757-b2fe07346a85
+      #   DomainName: deve.mantisdev.xyz
+      #   Route53:
+      #     HostedZoneId: Z02197422SJU3KBJW4QIW
+      #   BasePath:
+      #     - /config
+
+      Cors:
+        AllowMethods: "'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS'"
+        AllowHeaders: "'Origin, X-Requested-With, Content-Type, Accept, Authorization, Office, User'"
+        AllowOrigin: "'*'"
+      Auth:
+        Authorizers:
+          CustomHeadersAuth:
+            UserPoolArn: arn:aws:cognito-idp:us-east-1:909231289503:userpool/us-east-1_GIOuPJSzx
+  # MAPPING DOMAIN
+  ApiGatewayMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    # DependsOn:
+    #   - RestApi
+    Properties:
+      BasePath: config
+      DomainName: api.mantisdev.xyz
+      RestApiId: !Ref RestApi
+      Stage: !Ref RestApi.Stage
+
+  ProductCoreLayer:
+        Type: AWS::Serverless::LayerVersion
+        Properties:
+            LayerName: sam-app-dependencies
+            Description: Dependencies for sam app [sam-with-layers]
+            ContentUri: dependencies/
+            CompatibleRuntimes:
+              - python3.8
+            RetentionPolicy: Delete
+  GatewayResponseDefault4XX:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+      ResponseType: DEFAULT_4XX
+      RestApiId: !Ref RestApi
+      # StatusCode: '404'
+  GatewayResponseDefault5XX:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+      ResponseType: DEFAULT_5XX
+      RestApiId: !Ref RestApi
+      # StatusCode: '404'
+  # AuthFuntion:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: authFuntion
+  #     CodeUri: singnin/
+  #     Handler: app.auth
+  #     Runtime: python3.8
+  #     Events:
+  #       AuthApi:
+  #         Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+  #         Properties:
+  #           Path: /singnin
+  #           Method: post
+  #           RestApiId: !Ref RestApi
+  #           # Auth:
+  #           #   Authorizer: CustomHeadersAuth
+  #     Role: arn:aws:iam::909231289503:role/serverless_framework
+
+  #Area
+  pruebaFuntion:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: pruebaFuntion
+      CodeUri: Prueba/
+      Handler: handler.prueba
+      Runtime: python3.8
+      Events:
+        pruebaApi:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /prueba
+            Method: get
+            RestApiId: !Ref RestApi
+            # Auth:
+            #   Authorizer: CustomHeadersAuth
+      Role: arn:aws:iam::909231289503:role/serverless_framework
+
+
+Outputs:
+  # AuthApi:
+  #   Description: "API Gateway endpoint URL for Prod stage for auth function congnito"
+  #   Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/config/singnin/"
+  # AuthFuntion:
+  #   Description: "auth Lambda Function ARN"
+  #   Value: !GetAtt AuthFuntion.Arn
+
+  #AREA
+  pruebaApi:
+    Description: "API Gateway endpoint URL for Prod stage List Area"
+    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/prueba/"
+  pruebaFuntion:
+    Description: "prueba"
+    Value: !GetAtt pruebaFuntion.Arn

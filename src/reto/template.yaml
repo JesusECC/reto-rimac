@@ -1,0 +1,227 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Reto rimac
+
+Globals:
+  Function:
+    Timeout: 300
+    Layers:
+      - !Ref ProductCoreLayer
+    Environment:
+      Variables:
+        ENVIRONMENT: "dev"
+        USER_POLL_ID: "us-east-1_zgOlevvMy"
+        CLIEND_ID: "5tt32lmhd2agiq34itnu441h1i"
+        REGION_NAME: "us-east-1"
+        DOMAIN: "jesus.xyz"
+        SUBDOMAIN: "dev"
+        DB: "Reto-rimac"
+        USER: "admin"
+        PASSWORD: "RNH7uRvBuTodj^7**"
+        READER: "formula-ac.chfcjyb9o5c3.us-east-1.rds.amazonaws.com"
+        WRITER: "formula-ac.chfcjyb9o5c3.us-east-1.rds.amazonaws.com"
+
+Parameters:
+  EnviromentRol:
+    Type: String
+    Description: "arn:aws:iam::909231289503:role/serverless_framework"
+  stage:
+    Type: String
+    Description: 'dev'
+  domain:
+    Type: String
+    Description: 'mantisdev.xyz'
+
+  HostedZoneId:
+    Type: String
+    Description: 'Z02197422SJU3KBJW4QIW'
+
+  CertificateArn:
+    Type: String
+    Description: 'arn:aws:acm:us-east-1:909231289503:certificate/e7a9b9f8-f3aa-4f19-9757-b2fe07346a85'
+
+Resources:
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+      Name: api-reto
+
+      Cors:
+        AllowMethods: "'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS'"
+        AllowHeaders: "'Origin, X-Requested-With, Content-Type, Accept, Authorization, Office, User'"
+        AllowOrigin: "'*'"
+      Auth:
+        Authorizers:
+          CustomHeadersAuth:
+            UserPoolArn: arn:aws:cognito-idp:us-east-1:909231289503:userpool/us-east-1_zgOlevvMy
+  # MAPPING DOMAIN
+  ApiGatewayMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath: reto
+      DomainName: apidev.mantisdev.xyz
+      RestApiId: !Ref RestApi
+      Stage: !Ref RestApi.Stage
+
+  ProductCoreLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: sam-app-dependencies
+      Description: Dependencies for sam app [sam-with-layers]
+      ContentUri: dependencies/
+      CompatibleRuntimes:
+        - python3.8
+      RetentionPolicy: Delete
+  GatewayResponseDefault4XX:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+      ResponseType: DEFAULT_4XX
+      RestApiId: !Ref RestApi
+      # StatusCode: '404'
+  GatewayResponseDefault5XX:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+      ResponseType: DEFAULT_5XX
+      RestApiId: !Ref RestApi
+      # StatusCode: '404'
+
+  #provider
+  listClientFuntion:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: listClientFuntion
+      CodeUri: client/
+      Handler: handleClient.listaClient
+      Runtime: python3.8
+      MemorySize: 128
+      Events:
+        listClientApi:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /list/cliente
+            Method: get
+            RestApiId: !Ref RestApi
+            # Auth:
+            #   Authorizer: CustomHeadersAuth
+      Role: !Ref EnviromentRol
+
+  listDistritoFuntion:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: listDistritoFuntion
+      CodeUri: distrito/
+      Handler: handleDistrito.listaDistrito
+      Runtime: python3.8
+      MemorySize: 128
+      Events:
+        listDistritoApi:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /list/distrito
+            Method: get
+            RestApiId: !Ref RestApi
+            # Auth:
+            #   Authorizer: CustomHeadersAuth
+      Role: !Ref EnviromentRol
+
+  listVehiculoFuntion:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: listVehiculoFuntion
+      CodeUri: vehiculo/
+      Handler: handleVehiculo.getVehiculo
+      Runtime: python3.8
+      MemorySize: 128
+      Events:
+        listVehiculoApi:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /obtener/vehiculo
+            Method: post
+            RestApiId: !Ref RestApi
+            # Auth:
+            #   Authorizer: CustomHeadersAuth
+      Role: !Ref EnviromentRol
+
+  listTipoTallerFuntion:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: listTipoTallerFuntion
+      CodeUri: taller/
+      Handler: handleTaller.getTipoTaller
+      Runtime: python3.8
+      MemorySize: 128
+      Events:
+        listTipoTallerApi:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /tipo/taller
+            Method: get
+            RestApiId: !Ref RestApi
+            # Auth:
+            #   Authorizer: CustomHeadersAuth
+      Role: !Ref EnviromentRol
+
+  findTallerFuntion:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: findTallerFuntion
+      CodeUri: taller/
+      Handler: handleTaller.findTaller
+      Runtime: python3.8
+      MemorySize: 128
+      Events:
+        findTallerApi:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /obtener/taller
+            Method: post
+            RestApiId: !Ref RestApi
+            # Auth:
+            #   Authorizer: CustomHeadersAuth
+      Role: !Ref EnviromentRol
+
+Outputs:
+
+  listClientApi:
+    Description: "API Gateway endpoint URL for Prod stage for list cliente"
+    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/reto/list/cliente"
+  listClientFuntion:
+    Description: "listado de cliente"
+    Value: !GetAtt listClientFuntion.Arn
+
+  listDistritoApi:
+    Description: "API Gateway endpoint URL for Prod stage for list cliente"
+    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/reto/list/distrito"
+  listDistritoFuntion:
+    Description: "listado de cliente"
+    Value: !GetAtt listDistritoFuntion.Arn
+
+  listVehiculoApi:
+    Description: "API Gateway endpoint URL for Prod stage for list cliente"
+    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/reto/obtener/vehiculo"
+  listVehiculoFuntion:
+    Description: "listado de cliente"
+    Value: !GetAtt listVehiculoFuntion.Arn
+
+  listTipoTallerApi:
+    Description: "API Gateway endpoint URL for Prod stage for list cliente"
+    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/reto/tipo/taller"
+  listTipoTallerFuntion:
+    Description: "listado de cliente"
+    Value: !GetAtt listTipoTallerFuntion.Arn
+
+  findTallerApi:
+    Description: "API Gateway endpoint URL for Prod stage for list cliente"
+    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/reto/obtener/taller"
+  findTallerFuntion:
+    Description: "listado de cliente"
+    Value: !GetAtt findTallerFuntion.Arn

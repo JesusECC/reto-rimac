@@ -1,0 +1,101 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'formula-pw-back Sample SAM Template for formula-pw-back coniguracion
+
+  '
+Globals:
+  Function:
+    Timeout: 300
+    Layers:
+    - Ref: ProductCoreLayer
+    Environment:
+      Variables:
+        ENVIRONMENT: prd
+        USER_POLL_ID: us-east-1_GIOuPJSzx
+        CLIEND_ID: 3u1558r2f4toqgm4h5at7pbgfv
+        REGION_NAME: us-east-1
+        DOMAIN: mantisdev.xyz
+        SUBDOMAIN: dev
+        DB: formula_ac_ultimate
+        USER: admin
+        PASSWORD: RNH7uRvBuTodj^7**
+        READER: formula-ac.chfcjyb9o5c3.us-east-1.rds.amazonaws.com
+        WRITER: formula-ac.chfcjyb9o5c3.us-east-1.rds.amazonaws.com
+Resources:
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+      Name: api-config
+      Cors:
+        AllowMethods: '''GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS'''
+        AllowHeaders: '''Origin, X-Requested-With, Content-Type, Accept, Authorization,
+          Office, User'''
+        AllowOrigin: '''*'''
+      Auth:
+        Authorizers:
+          CustomHeadersAuth:
+            UserPoolArn: arn:aws:cognito-idp:us-east-1:909231289503:userpool/us-east-1_GIOuPJSzx
+  ApiGatewayMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath: compras
+      DomainName: api.mantisdev.xyz
+      RestApiId:
+        Ref: RestApi
+      Stage:
+        Ref: RestApi.Stage
+  ProductCoreLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: sam-app-dependencies
+      Description: Dependencies for sam app [sam-with-layers]
+      ContentUri: s3://deploy-back/4b1c8f9e920e58b06634828ddc162587
+      CompatibleRuntimes:
+      - python3.8
+      RetentionPolicy: Delete
+  GatewayResponseDefault4XX:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+        gatewayresponse.header.Access-Control-Allow-Headers: '''*'''
+      ResponseType: DEFAULT_4XX
+      RestApiId:
+        Ref: RestApi
+  GatewayResponseDefault5XX:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+        gatewayresponse.header.Access-Control-Allow-Headers: '''*'''
+      ResponseType: DEFAULT_5XX
+      RestApiId:
+        Ref: RestApi
+  pruebaFuntion:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: pruebaFuntion
+      CodeUri: s3://deploy-back/3e17198617fdfa8caa3bcd81e56d600d
+      Handler: handler.prueba
+      Runtime: python3.8
+      Events:
+        pruebaApi:
+          Type: Api
+          Properties:
+            Path: /prueba
+            Method: get
+            RestApiId:
+              Ref: RestApi
+      Role: arn:aws:iam::909231289503:role/serverless_framework
+Outputs:
+  pruebaApi:
+    Description: API Gateway endpoint URL for Prod stage List Area
+    Value:
+      Fn::Sub: https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/prueba/
+  pruebaFuntion:
+    Description: prueba
+    Value:
+      Fn::GetAtt:
+      - pruebaFuntion
+      - Arn
