@@ -1,8 +1,0 @@
-{
-	"deployment": {
-		"region": "us-east-1",
-		"serviceName": "formula-ac",
-		"userPoolName": "formula-ac",
-		"clientName": "client_id"
-	}
-}

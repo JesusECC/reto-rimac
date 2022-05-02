@@ -13,9 +13,23 @@ def getTipoTaller(event, context):
 
 def findTaller(event, context):
     params = json.loads(event["body"])
-    idDistrito = params["distrito"]
-    idTaller = params["tipo"]
-    idPlaca = params["placa"]
+    print('--------------------------------------------------------')
+    print(params)
+    print(type(params["distrito"]))
+    print(type(params["tipo"]))
+    print(type(params["placa"]))
+    idDistrito = None
+    idTaller = None
+    idPlaca = None
+    if params["distrito"] is not None:
+        print('llegue al print')
+        idDistrito = params["distrito"]
+    if params["tipo"] is not None:
+        idTaller = params["tipo"]
+    if params["tipo"] != '':
+        idPlaca = params["placa"]
+    print('--------------------------------------------------------')
+    print(params)
 
     data = connect.query("sp_getTaller",[idDistrito,idTaller,idPlaca])
     print('********************************')
