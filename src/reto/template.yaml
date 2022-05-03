@@ -11,17 +11,12 @@ Globals:
     Environment:
       Variables:
         ENVIRONMENT: "dev"
-        USER_POLL_ID: "us-east-1_zgOlevvMy"
-        CLIEND_ID: "5tt32lmhd2agiq34itnu441h1i"
-        REGION_NAME: "us-east-1"
         DOMAIN: "jesus.xyz"
         SUBDOMAIN: "dev"
         DB: "Reto-rimac"
-        USER: "admin"
-        PASSWORD: "RNH7uRvBuTodj^7**"
-        READER: "formula-ac.chfcjyb9o5c3.us-east-1.rds.amazonaws.com"
-        WRITER: "formula-ac.chfcjyb9o5c3.us-east-1.rds.amazonaws.com"
-
+        USER: "administrador"
+        PASSWORD: "THYXuRbBuPeHP^4--"
+        DATABASE: "reto-rimac.chfcjyb9o5c3.us-east-1.rds.amazonaws.com"
 Parameters:
   EnviromentRol:
     Type: String
